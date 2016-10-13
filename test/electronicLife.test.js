@@ -53,10 +53,6 @@ describe("the random element function", function () {
         expect(array).toContain(element);
     });
 
-    it("doesn't get an element that is not in the array ", function () {
-        var element = 'aw';
-        expect(array).not.toContain(element);
-    });
 
 });
 

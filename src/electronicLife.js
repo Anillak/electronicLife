@@ -80,7 +80,7 @@ function charFromElement(element) {
 }
 
 function World(map, legend) {
-    var grid = new Grid(map[0].lenght, map.length);
+    var grid = new Grid(map[0].length, map.length);
     this.grid = grid;
     this.legend = legend;
 
@@ -105,3 +105,16 @@ World.prototype.toString = function() {
 };
 
 function Wall() {}
+
+var plan = ["##############################",
+            "#               #            #",
+            "#         o     #            #",
+            "####            #            #",
+            "#          o    #     ########",
+            "#                            #",
+            "#    #######                 #",
+            "#                    o       #",
+            "#                            #",
+            "##############################"];
+var world = new World(plan, {"#": Wall, "o": BouncingCritter});
+console.log(world.toString());
