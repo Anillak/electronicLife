@@ -4,8 +4,43 @@
     <meta charset="UTF-8">
     <title>Electronic Life</title>
     <script src="electronicLife.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
+    <div id="world"></div>
+    <script>
+        function Animated(world) {
+            this.world = world;
+            var node = document.getElementById("world");
+            this.pre = node.appendChild(document.createElement("pre"));
+            this.pre.appendChild(document.createTextNode(world.toString()));
+            var self = this;
+            this.interval = setInterval(function() { self.tick(); }, 333);
+        }
 
+        Animated.prototype.tick = function () {
+            this.world.turn();
+            this.pre.removeChild(this.pre.firstChild);
+            this.pre.appendChild(this.pre.ownerDocument.createTextNode(this.world.toString()));
+        };
+
+        var valley = new LifelikeWorld(
+                ["############################",
+                    "#####                 ######",
+                    "##   ***                **##",
+                    "#   *##**         **  O  *##",
+                    "#    ***     O    ##**    *#",
+                    "#       O         ##***    #",
+                    "#                 ##**     #",
+                    "#   O       #*             #",
+                    "#*          #**       O    #",
+                    "#***        ##**    O    **#",
+                    "##****     ###***       *###",
+                    "############################"],
+                {"#": Wall, "O": PlantEater, "*": Plant}
+        );
+
+        new Animated(valley);
+    </script>
 </body>
 </html>

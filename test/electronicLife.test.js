@@ -182,3 +182,67 @@ describe("the bouncing critter class", function () {
 describe("the wall flower class", function () {
 
 });
+
+describe("the action types", function () {
+    var room;
+    var plant;
+    var plantEater;
+    var plantPosition;
+    var plantEaterPosition;
+
+    beforeEach(function() {
+        room = new World(["#####",
+                          "#  *#",
+                          "#  O#",
+                          "#####"],
+            {"#": Wall, "O": PlantEater, "*": Plant});
+        plantPosition = new Vector(3, 1);
+        plantEaterPosition = new Vector(3, 2);
+        plant = room.grid.get(plantPosition);
+        plantEater = room.grid.get(plantEaterPosition);
+    });
+
+    it("has several action types defined", function () {
+        expect(actionTypes.grow).toEqual(jasmine.any(Function));
+        expect(actionTypes.move).toEqual(jasmine.any(Function));
+        expect(actionTypes.eat).toEqual(jasmine.any(Function));
+        expect(actionTypes.reproduce).toEqual(jasmine.any(Function));
+    });
+
+    it("grow makes the critters get more energy", function () {
+        var plantBornWithEnergy = plant.energy;
+        var eaterBornWithEnergy = plantEater.energy;
+        var action = {type: "grow", direction: 'e'};
+
+        var result = actionTypes[action.type].call(room, plant, plantPosition, action);
+        expect(result).toBe(true);
+        expect(plant.energy).toBeGreaterThan(plantBornWithEnergy);
+
+        result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+        expect(result).toBe(true);
+        expect(plantEater.energy).toBeGreaterThan(eaterBornWithEnergy);
+    });
+
+    it("move allows the critters to move, they lose energy doing so", function () {
+        var eaterBornWithEnergy = plantEater.energy;
+        var action = {type: "move", direction: 'w'};
+        var result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+
+        expect(result).toBe(true);
+        expect(plantEater.energy).toBeLessThan(eaterBornWithEnergy);
+        expect(room.toString()).toEqual("\n#####\n#  *#\n# O #\n#####\n")
+    });
+
+    it("doesn't allow critters to move at walls or when energy is under 1", function () {
+        var action = {type: "move", direction: 's'};
+        var result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+
+        expect(result).toBe(false);
+        expect(room.toString()).toEqual("\n#####\n#  *#\n#  O#\n#####\n");
+
+        plantEater.energy = 0.5;
+        result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+        expect(result).toBe(false);
+        expect(room.toString()).toEqual("\n#####\n#  *#\n#  O#\n#####\n");
+    });
+});

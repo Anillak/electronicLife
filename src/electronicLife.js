@@ -217,7 +217,7 @@ actionTypes.grow = function(critter) {
 };
 actionTypes.move = function(critter, vector, action) {
     var dest = this.checkDestination(action, vector);
-    if (dest == null || critter <=1 || this.grid.get(dest) != null) {
+    if (dest == null || critter.energy <= 1 || this.grid.get(dest) != null) {
         return false;
     }
     critter.energy -= 1;
@@ -283,23 +283,3 @@ PlantEater.prototype.act = function(view) {
     if (space)
         return {type: "move", direction: space};
 };
-
-var valley = new LifelikeWorld(
-    ["############################",
-     "#####                 ######",
-     "##   ***                **##",
-     "#   *##**         **  O  *##",
-     "#    ***     O    ##**    *#",
-     "#       O         ##***    #",
-     "#                 ##**     #",
-     "#   O       #*             #",
-     "#*          #**       O    #",
-     "#***        ##**    O    **#",
-     "##****     ###***       *###",
-     "############################"],
-    {"#": Wall, "O": PlantEater, "*": Plant}
-);
-for (var j = 0; j < 10; j++) {
-    valley.turn();
-    console.log(valley.toString());
-}
