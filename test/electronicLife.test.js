@@ -32,7 +32,7 @@ describe("the grid class", function() {
         expect(grid.get(new Vector(1, 1))).toBe(undefined);
     });
 
-    it("can set 'x' to a space and then get it", function() {
+    it("can set and object to a space and then get it", function() {
         grid.set(new Vector(1, 1), "x");
         expect(grid.get(new Vector(1, 1))).toBe("x");
     });
@@ -43,6 +43,25 @@ describe("the grid class", function() {
         expect(grid.isInside(new Vector(6, 8))).toBe(false);
         expect(grid.isInside(new Vector(5, 6))).toBe(false);
     });
+
+    it("has a forEach function invoking a given method with an argument and a position vector", function () {
+        grid.set(new Vector(1, 1), new Vector(1, 1));
+        grid.set(new Vector(2, 2), new Vector(2, 2));
+        grid.set(new Vector(3, 3), new Vector(3, 3));
+        var agent = {
+            test: function (vector, position) {}
+        };
+        spyOn(agent, 'test');
+
+        grid.forEach(agent.test, this);
+
+        expect(agent.test).toHaveBeenCalled();
+        expect(agent.test).toHaveBeenCalledTimes(3);
+        expect(agent.test).toHaveBeenCalledWith(new Vector(1, 1), new Vector(1, 1));
+        expect(agent.test).toHaveBeenCalledWith(new Vector(2, 2), new Vector(2, 2));
+        expect(agent.test).toHaveBeenCalledWith(new Vector(3, 3), new Vector(3, 3));
+        expect(agent.test).not.toHaveBeenCalledWith(new Vector(2, 1), new Vector(3, 1));
+    });
 });
 
 describe("the random element function", function () {
@@ -51,14 +70,6 @@ describe("the random element function", function () {
     it("gets a random element from an array", function () {
         var element = randomElement(array);
         expect(array).toContain(element);
-    });
-});
-
-describe("the bouncing critter class", function () {
-    var critter = new BouncingCritter();
-
-    it("can move in a direction", function () {
-
     });
 });
 
@@ -98,19 +109,73 @@ describe("the element functions", function () {
 });
 
 describe("the World class", function () {
-    var narnia = new World(["nv","vn"], {"n": Number, "v": Vector});
+    var room = new World(["####","#  #", "####"], {"#": Wall});
 
     it("has a grid and a legend", function () {
-        expect(narnia.legend).toBeDefined();
-        expect(narnia.grid).toBeDefined();
+        expect(room.legend).toBeDefined();
+        expect(room.grid).toBeDefined();
     });
 
     it("the grid elements are objects from the legend", function () {
-        expect(narnia.grid.get(new Vector(0, 0))).toEqual(jasmine.any(Number));
-        expect(narnia.grid.get(new Vector(0, 1))).toEqual(jasmine.any(Vector));
+        expect(room.grid.get(new Vector(0, 0))).toEqual(jasmine.any(Wall));
+        expect(room.grid.get(new Vector(1, 1))).toBeNull();
     });
 
     it("prints out the map", function () {
-        expect(narnia.toString()).toEqual("\nnv\nvn\n");
+        expect(room.toString()).toEqual("\n####\n#  #\n####\n");
+    });
+
+    it("can check if a destination is inside the map", function () {
+        var movement = {
+            direction: "e"
+        };
+        var dest = room.checkDestination(movement, new Vector(0,1));
+        expect(dest).toEqual(new Vector(1, 1));
+        var wrong = room.checkDestination(movement, new Vector(3,0));
+        expect(wrong).toBeUndefined();
+    });
+
+    it("lets the heroes act", function () {
+        var hero = {
+            act: function () {}
+        };
+        spyOn(hero, "act");
+        room.letAct(hero, new Vector(1,0));
+        expect(hero.act).toHaveBeenCalled();
+    });
+});
+
+
+describe("the bouncing critter class", function () {
+    var critter = new BouncingCritter();
+    var room = new World(["####","#  #", "####"], {"#": Wall});
+
+    it("gives information where will it move to", function () {
+        var eyes = new View(room, new Vector(1, 1));
+        var whatToDo = critter.act(eyes);
+        expect(whatToDo).toEqual({type: "move", direction: "e"});
+    });
+});
+
+describe("the view class", function () {
+    var room = new World(["#####","#   #", "#####"], {"#": Wall});
+    var view = new View(room, new Vector(2, 1));
+
+    it("takes a world and a position in it", function () {
+        expect(view).toBeDefined();
+    });
+
+    it("can look in a direction", function () {
+        var iSee = view.look("e");
+        expect(iSee).toEqual(" ");
+        iSee = view.look("s");
+        expect(iSee).toEqual("#");
+    });
+
+    it("can find where to go from the current position", function () {
+        var iCanMoveTo = view.findAll(" ");
+        expect(iCanMoveTo).toEqual(["e", "w"]);
+        var iDesidedToMoveTo = view.find(" ");
+        expect(iDesidedToMoveTo).toMatch(/e|w/);
     });
 });
