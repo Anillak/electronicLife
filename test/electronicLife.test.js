@@ -145,18 +145,6 @@ describe("the World class", function () {
     });
 });
 
-
-describe("the bouncing critter class", function () {
-    var critter = new BouncingCritter();
-    var room = new World(["####","#  #", "####"], {"#": Wall});
-
-    it("gives information where will it move to", function () {
-        var eyes = new View(room, new Vector(1, 1));
-        var whatToDo = critter.act(eyes);
-        expect(whatToDo).toEqual({type: "move", direction: "e"});
-    });
-});
-
 describe("the view class", function () {
     var room = new World(["#####","#   #", "#####"], {"#": Wall});
     var view = new View(room, new Vector(2, 1));
@@ -178,4 +166,19 @@ describe("the view class", function () {
         var iDesidedToMoveTo = view.find(" ");
         expect(iDesidedToMoveTo).toMatch(/e|w/);
     });
+});
+
+describe("the bouncing critter class", function () {
+    var critter = new BouncingCritter();
+    var room = new World(["####","#  #", "####"], {"#": Wall});
+
+    it("gives information where will it move to", function () {
+        var eyes = new View(room, new Vector(1, 1));
+        var whatToDo = critter.act(eyes);
+        expect(whatToDo).toEqual({type: "move", direction: "e"});
+    });
+});
+
+describe("the wall flower class", function () {
+
 });
