@@ -179,10 +179,6 @@ describe("the bouncing critter class", function () {
     });
 });
 
-describe("the wall flower class", function () {
-
-});
-
 describe("the action types", function () {
     var room;
     var plant;
@@ -244,5 +240,117 @@ describe("the action types", function () {
         result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
         expect(result).toBe(false);
         expect(room.toString()).toEqual("\n#####\n#  *#\n#  O#\n#####\n");
+    });
+
+    it("critters can eat other creaters", function () {
+        var plantBornWithEnergy = plant.energy;
+        var eaterBornWithEnergy = plantEater.energy;
+        var action = {type: "eat", direction: 'n'};
+        var result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+
+        expect(result).toBe(true);
+        expect(room.toString()).toEqual("\n#####\n#   #\n#  O#\n#####\n");
+        expect(plantEater.energy).toEqual(eaterBornWithEnergy + plantBornWithEnergy);
+    });
+
+    it("eating should fail if is not pointed at an eatable critter", function () {
+        var action = {type: "eat", direction: 'w'};
+        var result = actionTypes[action.type].call(room, plantEater, plantEaterPosition, action);
+
+        expect(result).toBe(false);
+        expect(room.toString()).toEqual("\n#####\n#  *#\n#  O#\n#####\n");
+    });
+
+    it("critters can reproduce when having enough energy", function () {
+        var neededEnergy = 16;
+        plant.energy = neededEnergy;
+        var action = {type: "reproduce", direction: 'w'};
+        var result = actionTypes[action.type].call(room, plant, plantPosition, action);
+
+        expect(result).toBe(true);
+        expect(plant.energy).toBeLessThan(neededEnergy);
+        expect(room.toString()).toEqual("\n#####\n# **#\n#  O#\n#####\n");
+
+    });
+});
+
+describe("the plant class", function () {
+    var plant;
+    var plantPosition;
+    var view;
+
+    beforeEach(function() {
+        var room = new World(["#####",
+                "#  *#",
+                "#   #",
+                "#####"],
+            {"#": Wall, "*": Plant});
+        plantPosition = new Vector(3, 1);
+        plant = room.grid.get(plantPosition);
+        view = new View(room, plantPosition);
+    });
+
+    it("starts with energy", function () {
+        expect(plant).toBeDefined();
+        expect(plant.energy).toBeLessThanOrEqual(7);
+        expect(plant.energy).toBeGreaterThanOrEqual(3);
+    });
+
+    it("will grow constantly until reaching energy 20", function () {
+        var action = plant.act(view);
+        expect(action).toEqual({type: "grow"});
+        plant.energy = 20;
+        action = plant.act(view);
+        expect(action).not.toEqual({type: "grow"});
+    });
+
+    it("will reproduce if there is free space and energy", function () {
+        plant.energy = 20;
+        var action = plant.act(view);
+        expect(action.type).toEqual("reproduce");
+        expect(action.direction).toMatch(/w|s|sw/);
+    });
+});
+
+describe("the plant eater class", function () {
+    var view;
+    var plantEater;
+    var plantEaterPosition;
+
+    beforeEach(function() {
+        var room = new World(["#####",
+                "#  *#",
+                "#  O#",
+                "#####"],
+            {"#": Wall, "O": PlantEater, "*": Plant});
+        plantEaterPosition = new Vector(3, 2);
+        plantEater = room.grid.get(plantEaterPosition);
+        view = new View(room, plantEaterPosition);
+    });
+
+    it("starts with energy", function () {
+        expect(plantEater).toBeDefined();
+        expect(plantEater.energy).toEqual(20);
+    });
+
+    it("will move or eat if its energy is less than 60", function () {
+        var action = plantEater.act(view);
+        expect(action.type).toMatch(/eat|move/);
+        if (action.type === "eat") {
+            expect(action.direction).toEqual("n");
+        }
+        else {
+            expect(action.direction).toMatch(/w|nw/);
+        }
+        plantEater.energy = 61;
+        action = plantEater.act(view);
+        expect(action.type).not.toMatch(/eat|move/);
+    });
+
+    it("will reproduce if there is free space and energy", function () {
+        plantEater.energy = 61;
+        var action = plantEater.act(view);
+        expect(action.type).toEqual("reproduce");
+        expect(action.direction).toMatch(/w|nw/);
     });
 });

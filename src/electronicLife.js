@@ -242,7 +242,7 @@ actionTypes.reproduce = function (critter, vector, action) {
         return false;
     }
     critter.energy -= baby.energy;
-    this.grid.set(vector, baby);
+    this.grid.set(dest, baby);
     return true;
 };
 
