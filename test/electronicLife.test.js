@@ -354,3 +354,51 @@ describe("the plant eater class", function () {
         expect(action.direction).toMatch(/w|nw/);
     });
 });
+
+describe("the zebra class", function () {
+    var view;
+    var zebra;
+    var zebraPosition;
+    var room;
+
+    beforeEach(function() {
+        room = new World(["#####",
+                "# **#",
+                "#  O#",
+                "#####"],
+            {"#": Wall, "O": Zebra, "*": Plant});
+        zebraPosition = new Vector(3, 2);
+        zebra = room.grid.get(zebraPosition);
+        view = new View(room, zebraPosition);
+    });
+
+    it("starts with energy", function () {
+        expect(zebra).toBeDefined();
+        expect(zebra.energy).toEqual(25);
+    });
+
+    it("will eat if there are more than 1 plant around", function () {
+        var action = zebra.act(view);
+        expect(action.type).toEqual("eat");
+        expect(action.direction).toMatch(/n|nw/);
+
+        room.grid.set(new Vector(3, 1), null);
+        action = zebra.act(view);
+        expect(action.type).not.toEqual("eat");
+    });
+
+    it("will reproduce if there is free space and energy more than 80", function () {
+        zebra.energy = 81;
+        var action = zebra.act(view);
+        expect(action.type).toEqual("reproduce");
+        expect(action.direction).toEqual("w");
+    });
+
+    it("will move otherwise", function () {
+        room.grid.set(new Vector(3, 1), null);
+        var action = zebra.act(view);
+        expect(zebra.migration).toMatch(/w|n/);
+        expect(action.type).toEqual("move");
+        expect(action.direction).toMatch(/w|n/)
+    });
+});

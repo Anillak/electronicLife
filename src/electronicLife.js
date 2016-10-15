@@ -283,3 +283,21 @@ PlantEater.prototype.act = function(view) {
     if (space)
         return {type: "move", direction: space};
 };
+
+function Zebra() {
+    this.energy = 25;
+    this.migration = "e";
+}
+
+Zebra.prototype.act = function (view) {
+    var space = view.find(" ");
+    if (space && this.energy > 80) {
+        return {type: "reproduce", direction: space};
+    }
+    var plants = view.findAll("*");
+    if (plants.length > 1)
+        return {type: "eat", direction: randomElement(plants)};
+    if (view.look(this.migration) != " " && space)
+        this.migration = space;
+    return {type: "move", direction: this.migration};
+};
