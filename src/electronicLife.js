@@ -11,9 +11,11 @@ Vector.prototype.minus = function (other) {
     return new Vector(this.x - other.x, this.y - other.y);
 };
 
-Vector.prototype.length = function () {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
-};
+Object.defineProperty(Vector.prototype, "length", {
+    get: function () {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+});
 
 function Grid(width, height) {
     this.space = new Array(width * height);
@@ -285,13 +287,13 @@ PlantEater.prototype.act = function(view) {
 };
 
 function Zebra() {
-    this.energy = 25;
+    this.energy = 30;
     this.migration = "e";
 }
 
 Zebra.prototype.act = function (view) {
     var space = view.find(" ");
-    if (space && this.energy > 80) {
+    if (space && this.energy > 90) {
         return {type: "reproduce", direction: space};
     }
     var plants = view.findAll("*");
@@ -300,4 +302,31 @@ Zebra.prototype.act = function (view) {
     if (view.look(this.migration) != " " && space)
         this.migration = space;
     return {type: "move", direction: this.migration};
+};
+
+function Tiger() {
+    this.energy = 100;
+    this.direction = "w";
+    this.preySeen = [];
+}
+
+Tiger.prototype.act = function(view) {
+    var seenPerTurn = this.preySeen.reduce(function(a, b) {
+            return a + b;
+        }, 0) / this.preySeen.length;
+    var prey = view.findAll("O");
+    this.preySeen.push(prey.length);
+    if (this.preySeen.length > 6) {
+        this.preySeen.shift();
+    }
+    if (prey.length && seenPerTurn > 0.25) {
+        return {type: "eat", direction: randomElement(prey)};
+    }
+
+    var space = view.find(" ");
+    if (this.energy > 400 && space)
+        return {type: "reproduce", direction: space};
+    if (view.look(this.direction) != " " && space)
+        this.direction = space;
+    return {type: "move", direction: this.direction};
 };

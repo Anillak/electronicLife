@@ -20,8 +20,8 @@ describe("the vector class", function() {
     });
 
     it("has length", function () {
-        expect(first.length()).toBeCloseTo(7, 0);
-        expect(second.length()).toBeCloseTo(3.6, 1);
+        expect(first.length).toBeCloseTo(7, 0);
+        expect(second.length).toBeCloseTo(3.6, 1);
     });
 });
 
@@ -374,7 +374,7 @@ describe("the zebra class", function () {
 
     it("starts with energy", function () {
         expect(zebra).toBeDefined();
-        expect(zebra.energy).toEqual(25);
+        expect(zebra.energy).toEqual(30);
     });
 
     it("will eat if there are more than 1 plant around", function () {
@@ -387,8 +387,8 @@ describe("the zebra class", function () {
         expect(action.type).not.toEqual("eat");
     });
 
-    it("will reproduce if there is free space and energy more than 80", function () {
-        zebra.energy = 81;
+    it("will reproduce if there is free space and energy more than 90", function () {
+        zebra.energy = 91;
         var action = zebra.act(view);
         expect(action.type).toEqual("reproduce");
         expect(action.direction).toEqual("w");
@@ -400,5 +400,45 @@ describe("the zebra class", function () {
         expect(zebra.migration).toMatch(/w|n/);
         expect(action.type).toEqual("move");
         expect(action.direction).toMatch(/w|n/)
+    });
+});
+
+describe("the tiger class", function () {
+    var view;
+    var tiger;
+    var tigerPosition;
+    var room;
+
+    beforeEach(function() {
+        room = new World(["#####",
+                "# **#",
+                "# @O#",
+                "#####"],
+            {"#": Wall, "O": Zebra, "*": Plant, "@": Tiger});
+        tigerPosition = new Vector(2, 2);
+        tiger = room.grid.get(tigerPosition);
+        view = new View(room, tigerPosition);
+    });
+
+    it("starts with energy", function () {
+        expect(tiger).toBeDefined();
+        expect(tiger.energy).toEqual(100);
+    });
+
+    it("will eat zebras if there are more of it", function () {
+
+    });
+
+    it("will reproduce if there is free space and energy more than 300", function () {
+        tiger.energy = 401;
+        var action = tiger.act(view);
+        expect(action.type).toEqual("reproduce");
+        expect(["w", "nw"]).toContain(action.direction);
+    });
+
+    it("will move otherwise", function () {
+        var action = tiger.act(view);
+        expect(action.type).toEqual("move");
+        expect(["w", "nw"]).toContain(action.direction);
     });
 });
